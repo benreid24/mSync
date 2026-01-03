@@ -1,0 +1,20 @@
+{
+  "name": "msync",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "tsc -b",
+    "dev": "concurrently \"pnpm --filter api dev\" \"pnpm --filter web dev\"",
+    "lint": "eslint . --ext .ts,.tsx",
+    "test": "jest"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "eslint": "^9.39.2",
+    "jest": "^30.2.0",
+    "typescript": "^5.9.3"
+  }
+}
