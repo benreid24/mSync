@@ -3,25 +3,21 @@ import express from "express";
 import { Playlist as PlaylistEntity } from "@msync/entities/playlist.js";
 import { getRequestContext } from "@msync/plugins/db/index.js";
 
-import { GetPlaylistParamsSchema, CreatePlaylistBodySchema } from "./schema.js";
+import { GetPlaylistParamsSchema, NewPlaylistSchema } from "@msync/api-types";
 
 export const router: express.Router = express.Router();
 
-router.get("/:id", async (req, res) => {
+router.get("/list", async (req, res) => {
   const orm = getRequestContext();
-  const { id } = GetPlaylistParamsSchema.parse(req.params);
 
-  const playlist = await orm.findOne(PlaylistEntity, { id });
-  if (!playlist) {
-    return res.status(404).json({ error: "Playlist not found" });
-  }
+  const playlists = await orm.find(PlaylistEntity, {});
 
-  res.status(200).json({ playlist });
+  res.status(200).json({ playlists });
 });
 
 router.post("/", async (req, res) => {
   const orm = getRequestContext();
-  const { name, source, folder } = CreatePlaylistBodySchema.parse(req.body);
+  const { name, source, folder } = NewPlaylistSchema.parse(req.body);
 
   const playlist = new PlaylistEntity();
   playlist.name = name;
@@ -51,7 +47,7 @@ router.delete("/:id", async (req, res) => {
 router.put("/:id", async (req, res) => {
   const orm = getRequestContext();
   const { id } = GetPlaylistParamsSchema.parse(req.params);
-  const { name, source, folder } = CreatePlaylistBodySchema.parse(req.body);
+  const { name, source, folder } = NewPlaylistSchema.parse(req.body);
 
   const playlist = await orm.findOne(PlaylistEntity, { id });
   if (!playlist) {
@@ -63,6 +59,18 @@ router.put("/:id", async (req, res) => {
   playlist.folder = folder;
 
   await orm.flush();
+
+  res.status(200).json({ playlist });
+});
+
+router.get("/:id", async (req, res) => {
+  const orm = getRequestContext();
+  const { id } = GetPlaylistParamsSchema.parse(req.params);
+
+  const playlist = await orm.findOne(PlaylistEntity, { id });
+  if (!playlist) {
+    return res.status(404).json({ error: "Playlist not found" });
+  }
 
   res.status(200).json({ playlist });
 });
