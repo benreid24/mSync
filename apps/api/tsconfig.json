@@ -8,15 +8,14 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "typeRoots": [
-      "../../node_modules/@types",
-      "./node_modules/@types"
-    ],
     "paths": {
+      "@msync/*": ["./src/*"],
       "@routes/*": ["./routes/*"]
     },
     "moduleResolution": "nodenext",
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "declaration": true,
+    "experimentalDecorators": true
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]

@@ -22,7 +22,9 @@ msync
 
 ### Installation
 
-1. Install dependencies: `pnpm install`
+1. Allow build scripts: `pnpm approve-builds`
+2. Install dependencies: `pnpm install`
+
 
 ### Running the Applications
 
