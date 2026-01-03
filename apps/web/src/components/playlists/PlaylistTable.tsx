@@ -4,6 +4,7 @@ import { usePlaylistContext } from "./PlaylistContext";
 import { Playlist } from "@msync/api-types";
 import { DeleteModal } from "./DeleteModal";
 import { PlaylistModal } from "./PlaylistModal";
+import { formatDate } from "@/dateFormat";
 
 export const PlaylistTable: React.FC = () => {
   const { playlists, updatePlaylist, deletePlaylist } = usePlaylistContext();
@@ -27,7 +28,15 @@ export const PlaylistTable: React.FC = () => {
             <th className="px-6 py-3 bg-gray-800 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
               Folder
             </th>
-            <th className="px-6 py-3 bg-gray-800" />
+            <th className="px-6 py-3 bg-gray-800 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+              Last Checked
+            </th>
+            <th className="px-6 py-3 bg-gray-800 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+              Last Changed
+            </th>
+            <th className="px-1 py-3 bg-gray-800  text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+              Actions
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -81,7 +90,11 @@ const PlaylistRow: React.FC<{
   playlist: Playlist;
   onDelete: () => void;
   onEdit: () => void;
-}> = ({ playlist: { name, source, folder }, onDelete, onEdit }) => {
+}> = ({
+  playlist: { name, source, folder, lastChecked, lastFetched },
+  onDelete,
+  onEdit,
+}) => {
   return (
     <tr>
       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-300">
@@ -99,7 +112,13 @@ const PlaylistRow: React.FC<{
       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
         {folder}
       </td>
-      <td className="whitespace-nowrap text-sm text-gray-300">
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+        {formatDate(lastChecked ? new Date(lastChecked) : null)}
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+        {formatDate(lastFetched ? new Date(lastFetched) : null)}
+      </td>
+      <td className="px-1 whitespace-nowrap text-sm text-gray-300">
         <Button variant="secondary" compact onClick={onEdit}>
           Edit
         </Button>
