@@ -1,12 +1,13 @@
 import { Options, BetterSqliteDriver } from "@mikro-orm/better-sqlite";
 import { TsMorphMetadataProvider } from "@mikro-orm/reflection";
-import { isDev, DB_FILE } from "@msync/env.js";
-import { Playlist } from "../../entities/playlist.js";
+import { isDev, DATA_PATH } from "@msync/env.js";
+import { Playlist } from "@msync/entities/playlist.js";
+import { Video } from "@msync/entities/video.js";
 
 const config: Options = {
   driver: BetterSqliteDriver,
-  dbName: DB_FILE,
-  entities: [Playlist],
+  dbName: `${DATA_PATH}/sqlite.db`,
+  entities: [Playlist, Video],
   metadataProvider: TsMorphMetadataProvider,
   debug: isDev,
   schemaGenerator: {

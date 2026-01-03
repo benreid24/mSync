@@ -4,6 +4,10 @@ import { ZodError } from "zod";
 
 import { PORT, isDev } from "@msync/env.js";
 import { setRoutes } from "./routes/index.js";
+import { initPlugins } from "./plugins/init.js";
+
+// Initialize plugins
+initPlugins();
 
 const app = express();
 

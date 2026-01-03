@@ -5,6 +5,8 @@ import { getRequestContext } from "@msync/plugins/db/index.js";
 
 import { GetPlaylistParamsSchema, NewPlaylistSchema } from "@msync/api-types";
 
+import { syncPlaylist } from "@msync/youtube/syncPlaylist.js";
+
 export const router: express.Router = express.Router();
 
 router.get("/list", async (req, res) => {
@@ -28,6 +30,20 @@ router.post("/", async (req, res) => {
   await orm.flush();
 
   res.status(201).json({ playlist });
+});
+
+router.post("/:id/sync", async (req, res) => {
+  const orm = getRequestContext();
+  const { id } = GetPlaylistParamsSchema.parse(req.params);
+
+  const playlist = await orm.findOne(PlaylistEntity, { id });
+  if (!playlist) {
+    return res.status(404).json({ error: "Playlist not found" });
+  }
+
+  await syncPlaylist(id, orm);
+
+  res.status(200).json({ message: "Playlist synced" });
 });
 
 router.delete("/:id", async (req, res) => {

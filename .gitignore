@@ -3,3 +3,4 @@ sqlite.db
 temp
 dist
 tsconfig.tsbuildinfo
+.env

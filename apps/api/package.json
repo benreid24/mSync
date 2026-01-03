@@ -4,7 +4,7 @@
   "main": "src/index.ts",
   "scripts": {
     "build": "tsc",
-    "dev": "tsx watch src/index.ts"
+    "dev": "tsx watch --env-file=.env src/index.ts"
   },
   "dependencies": {
     "@mikro-orm/better-sqlite": "^6.6.2",
@@ -15,6 +15,7 @@
     "better-sqlite3": "^12.5.0",
     "express": "^4.22.1",
     "http-proxy-middleware": "^3.0.5",
+    "ytdlp-nodejs": "^2.3.5",
     "zod": "^3.25.76"
   },
   "devDependencies": {
