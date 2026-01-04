@@ -9,6 +9,7 @@ import { Playlist } from "@msync/entities/playlist.js";
 import { getRequestContext } from "@msync/plugins/db/index.js";
 
 import { SyncState } from "@msync/api-types";
+import { Notifier } from "./notifier.js";
 
 class Syncer {
   state: SyncState = createIdleState();
@@ -36,29 +37,42 @@ class Syncer {
       const db = getRequestContext();
       const playlists = await db.find(Playlist, {});
 
-      this.state = createStartedState();
-      this.state.totalPlaylists = playlists.length;
+      const notifier = new Notifier();
+      await notifier.load(db);
 
-      for (const playlist of playlists) {
-        try {
-          await syncPlaylist(playlist.id, db, (e) =>
-            reduceSyncState(this.state, e)
-          );
-          this.state.playlistsCompleted += 1;
-        } catch (error) {
-          console.error(
-            `Error syncing playlist ${playlist.name} (ID: ${playlist.id}):`,
-            error
-          );
-          addErrorToState(this.state, error);
+      try {
+        this.state = createStartedState();
+        this.state.totalPlaylists = playlists.length;
+
+        for (const playlist of playlists) {
+          try {
+            await syncPlaylist(playlist.id, db, async (e) => {
+              reduceSyncState(this.state, e);
+
+              if (e.type === "notifyError") {
+                await notifier.notifyError();
+              }
+            });
+            this.state.playlistsCompleted += 1;
+          } catch (error) {
+            console.error(
+              `Error syncing playlist ${playlist.name} (ID: ${playlist.id}):`,
+              error
+            );
+            addErrorToState(this.state, error);
+            await notifier.notifyError();
+          }
         }
-      }
 
-      this.state = createIdleState(this.state);
+        this.state = createIdleState(this.state);
+      } catch (error) {
+        console.error("Sync error:", error);
+        this.state = createIdleState(this.state);
+        addErrorToState(this.state, error);
+        await notifier.notifyError();
+      }
     } catch (error) {
       console.error("Sync error:", error);
-      this.state = createIdleState(this.state);
-      addErrorToState(this.state, error);
     }
   }
 }

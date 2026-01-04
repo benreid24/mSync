@@ -17,7 +17,7 @@ import { SyncError } from "@msync/sync/error.js";
 export async function syncPlaylist(
   playlistId: number,
   db: DB,
-  onUpdate: (event: SyncStateEvent) => void
+  onUpdate: (event: SyncStateEvent) => Promise<void>
 ): Promise<void> {
   try {
     const playlist = await db.findOne(Playlist, { id: playlistId });
@@ -31,7 +31,7 @@ export async function syncPlaylist(
 
     const ytDlp = getYtdlp();
     const videoList = await fetchYoutubePlaylistItems(playlist.source);
-    onUpdate({ type: "notifyVideosFound", totalVideos: videoList.length });
+    await onUpdate({ type: "notifyVideosFound", totalVideos: videoList.length });
 
     // mark playlist checked
     playlist.lastChecked = new Date();
@@ -52,7 +52,7 @@ export async function syncPlaylist(
             console.debug(
               `Skipping download for existing video: ${video.title}`
             );
-            onUpdate({ type: "notifyVideoCompleted", action: "skipped" });
+            await onUpdate({ type: "notifyVideoCompleted", action: "skipped" });
             continue;
           }
 
@@ -66,7 +66,7 @@ export async function syncPlaylist(
             console.info(
               `Copied existing video to new location: ${video.title} -> ${dst}`
             );
-            onUpdate({ type: "notifyVideoCompleted", action: "copied" });
+            await onUpdate({ type: "notifyVideoCompleted", action: "copied" });
             downloadNew = false;
           } catch (copyError) {
             console.error(
@@ -90,7 +90,7 @@ export async function syncPlaylist(
             )
           ).trim();
           console.info(`Downloaded video: ${video.title} -> ${dst}`);
-          onUpdate({ type: "notifyVideoCompleted", action: "downloaded" });
+          await onUpdate({ type: "notifyVideoCompleted", action: "downloaded" });
         }
 
         // record result
@@ -102,7 +102,7 @@ export async function syncPlaylist(
         await db.flush();
       } catch (error) {
         console.error(`Error processing video ${video.title}:`, error);
-        onUpdate({ type: "notifyError", error: String(error) });
+        await onUpdate({ type: "notifyError", error: String(error) });
       }
     }
 
@@ -111,6 +111,6 @@ export async function syncPlaylist(
     );
   } catch (error) {
     console.error("Error syncing playlist:", error);
-    onUpdate({ type: "notifyError", error: String(error) });
+    await onUpdate({ type: "notifyError", error: String(error) });
   }
 }
