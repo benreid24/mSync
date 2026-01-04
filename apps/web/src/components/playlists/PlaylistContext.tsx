@@ -1,10 +1,5 @@
-import React, {
-  createContext,
-  useContext,
-  useState,
-  ReactNode,
-  useEffect,
-} from "react";
+import React, { createContext, useContext, useState, ReactNode } from "react";
+import { useQuery } from "@tanstack/react-query";
 
 import { Playlist, NewPlaylist } from "@msync/api-types";
 import {
@@ -13,6 +8,7 @@ import {
   updatePlaylist as updatePlaylistApi,
   deletePlaylist as deletePlaylistApi,
 } from "@/api/playlists";
+import { useSyncContext } from "./SyncContext";
 
 interface PlaylistContextState {
   playlists: Playlist[];
@@ -38,23 +34,28 @@ interface PlaylistProviderProps {
 export const PlaylistProvider: React.FC<PlaylistProviderProps> = ({
   children,
 }) => {
-  const [playlists, setPlaylists] = useState<Playlist[]>([]);
+  const { syncState } = useSyncContext();
+  const [queryInvalidator, setQueryInvalidator] = useState(0);
+
+  const { data: playlists } = useQuery<Playlist[]>({
+    queryKey: ["playlists", syncState, queryInvalidator],
+    queryFn: fetchAllPlaylistsApi,
+    initialData: [],
+  });
 
   const createPlaylist = async (data: NewPlaylist) => {
-    const newPlaylist = await createPlaylistApi(data);
-    setPlaylists((prev) => [...prev, newPlaylist]);
+    await createPlaylistApi(data);
+    setQueryInvalidator((prev) => prev + 1);
   };
 
   const updatePlaylist = async (id: number, data: NewPlaylist) => {
-    const updatedPlaylist = await updatePlaylistApi(id, data);
-    setPlaylists((prev) =>
-      prev.map((playlist) => (playlist.id === id ? updatedPlaylist : playlist))
-    );
+    await updatePlaylistApi(id, data);
+    setQueryInvalidator((prev) => prev + 1);
   };
 
   const deletePlaylist = async (id: number) => {
     await deletePlaylistApi(id);
-    setPlaylists((prev) => prev.filter((playlist) => playlist.id !== id));
+    setQueryInvalidator((prev) => prev + 1);
   };
 
   const value: PlaylistContextType = {
@@ -66,10 +67,6 @@ export const PlaylistProvider: React.FC<PlaylistProviderProps> = ({
     updatePlaylist,
     deletePlaylist,
   };
-
-  useEffect(() => {
-    void fetchAllPlaylistsApi().then((data) => setPlaylists(data));
-  }, []);
 
   return (
     <PlaylistContext.Provider value={value}>

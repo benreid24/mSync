@@ -51,7 +51,7 @@ export const PlaylistTable: React.FC = () => {
           {playlists.length === 0 && (
             <tr>
               <td
-                colSpan={4}
+                colSpan={6}
                 className="px-6 py-4 whitespace-nowrap text-sm text-gray-400 text-center"
               >
                 No playlists being synced yet. Add one!
