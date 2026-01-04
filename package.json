@@ -6,7 +6,7 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "tsc -b",
+    "build": "pnpm -r build",
     "dev": "concurrently \"pnpm --filter api dev\" \"pnpm --filter web dev\"",
     "lint": "eslint . --ext .ts,.tsx",
     "test": "jest"

@@ -1,10 +1,16 @@
 import express from "express";
 import path from "path";
+import { fileURLToPath } from "url";
 import { ZodError } from "zod";
 
 import { PORT, isDev } from "@msync/env.js";
 import { setRoutes } from "./routes/index.js";
 import { initPlugins } from "./plugins/init.js";
+import { getSyncer } from "./sync/syncer.js";
+
+// Get __dirname equivalent in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Initialize plugins
 initPlugins();
@@ -53,6 +59,14 @@ app.use(
     next(err);
   }
 );
+
+// Run syncer every 10 minutes
+const TEN_MINUTES = 10 * 60 * 1000;
+setInterval(() => {
+  const syncer = getSyncer();
+  console.log("Background sync triggered");
+  syncer.startSync();
+}, TEN_MINUTES);
 
 // Start the server
 app.listen(PORT, () => {

@@ -1,0 +1,21 @@
+services:
+  msync:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: msync
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DATA_PATH=/app/data
+      - MUSIC_PATH=/app/music
+      # Uncomment and customize these if needed:
+      # - YTDLP_PATH=/usr/bin/yt-dlp
+      # - FFMPEG_PATH=/usr/bin/ffmpeg
+    volumes:
+      # Persist database and music files
+      - ./data:/app/data
+      - ./music:/app/music
+    restart: unless-stopped
