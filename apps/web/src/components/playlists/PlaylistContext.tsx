@@ -41,6 +41,7 @@ export const PlaylistProvider: React.FC<PlaylistProviderProps> = ({
     queryKey: ["playlists", syncState, queryInvalidator],
     queryFn: fetchAllPlaylistsApi,
     initialData: [],
+    placeholderData: (previousData) => previousData,
   });
 
   const createPlaylist = async (data: NewPlaylist) => {

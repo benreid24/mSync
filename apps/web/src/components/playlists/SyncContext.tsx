@@ -25,20 +25,32 @@ interface SyncProviderProps {
   children: ReactNode;
 }
 
+const INTERVALS: Record<SyncState["state"], number> = {
+  idle: 5000,
+  syncing: 1000,
+};
+
 // Provider component
 export const SyncProvider: React.FC<SyncProviderProps> = ({ children }) => {
   const [keyInvalidator, setKeyInvalidator] = useState(0);
+  const [interval, setInterval] = useState(INTERVALS["idle"]);
 
   const { data: syncState } = useQuery<SyncState>({
     queryKey: ["syncState", keyInvalidator],
-    queryFn: fetchSyncStateApi,
-    refetchInterval: 5000,
+    queryFn: async () => {
+      const result = await fetchSyncStateApi();
+      setInterval(INTERVALS[result.state]);
+      return result;
+    },
+    refetchInterval: interval,
     initialData: { state: "idle", errors: [] },
+    placeholderData: (previousData) => previousData,
   });
 
   const startSync = async (): Promise<boolean> => {
     const started = await startSyncApi();
     setKeyInvalidator((prev) => prev + 1);
+    setInterval(INTERVALS["syncing"]);
     return started;
   };
 

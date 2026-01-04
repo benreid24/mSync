@@ -44,6 +44,7 @@ export async function syncPlaylist(
         });
 
         let dst = makeVideoFilename(outputDir, video.title, "mp3");
+        let downloadNew = true;
 
         if (existingVideo) {
           const existingVideoPath = dirname(existingVideo.localPath);
@@ -60,12 +61,22 @@ export async function syncPlaylist(
           dst = join(outputDir, existingVideoBasename);
 
           // copy existing video to new location
-          await copyFile(existingVideo.localPath, dst);
-          console.info(
-            `Copied existing video to new location: ${video.title} -> ${dst}`
-          );
-          onUpdate({ type: "notifyVideoCompleted", action: "copied" });
-        } else {
+          try {
+            await copyFile(existingVideo.localPath, dst);
+            console.info(
+              `Copied existing video to new location: ${video.title} -> ${dst}`
+            );
+            onUpdate({ type: "notifyVideoCompleted", action: "copied" });
+            downloadNew = false;
+          } catch (copyError) {
+            console.error(
+              `Failed to copy existing video for ${video.title}, will re-download.`,
+              copyError
+            );
+          }
+        }
+
+        if (downloadNew) {
           dst = (
             await ytDlp.downloadAsync(
               `https://www.youtube.com/watch?v=${video.id}`,
