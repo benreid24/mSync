@@ -1,6 +1,5 @@
 import express from "express";
 
-import { getRequestContext } from "@msync/plugins/db/index.js";
 import { getSyncer } from "@msync/sync/syncer.js";
 
 export const router: express.Router = express.Router();
