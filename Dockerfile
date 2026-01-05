@@ -26,6 +26,7 @@ RUN pnpm install --frozen-lockfile
 COPY apps/api/src ./apps/api/src
 COPY apps/web/src ./apps/web/src
 COPY apps/web/index.html ./apps/web/
+COPY apps/web/static ./apps/web/static
 COPY packages/msync-api-types/src ./packages/msync-api-types/src
 
 # Build all packages
