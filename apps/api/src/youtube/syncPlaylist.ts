@@ -90,6 +90,9 @@ export async function syncPlaylist(
                 audioFormat: "mp3",
                 print: "after_move:filepath",
                 windowsFilenames: true,
+                embedInfoJson: false,
+                embedThumbnail: true,
+                embedMetadata: true,
               }
             )
           ).trim();
