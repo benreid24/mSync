@@ -65,6 +65,7 @@ class Syncer {
         }
 
         this.state = createIdleState(this.state);
+        await notifier.notifyCompleted();
       } catch (error) {
         console.error("Sync error:", error);
         this.state = createIdleState(this.state);
