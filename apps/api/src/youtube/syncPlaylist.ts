@@ -31,7 +31,10 @@ export async function syncPlaylist(
 
     const ytDlp = getYtdlp();
     const videoList = await fetchYoutubePlaylistItems(playlist.source);
-    await onUpdate({ type: "notifyVideosFound", totalVideos: videoList.length });
+    await onUpdate({
+      type: "notifyVideosFound",
+      totalVideos: videoList.length,
+    });
 
     // mark playlist checked
     playlist.lastChecked = new Date();
@@ -86,11 +89,15 @@ export async function syncPlaylist(
                 keepVideo: false,
                 audioFormat: "mp3",
                 print: "after_move:filepath",
+                windowsFilenames: true,
               }
             )
           ).trim();
           console.info(`Downloaded video: ${video.title} -> ${dst}`);
-          await onUpdate({ type: "notifyVideoCompleted", action: "downloaded" });
+          await onUpdate({
+            type: "notifyVideoCompleted",
+            action: "downloaded",
+          });
         }
 
         // record result
