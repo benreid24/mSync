@@ -3,11 +3,11 @@
 # Stage 1: Build stage
 FROM node:20-alpine AS builder
 
-# Install pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
-
 # Install build dependencies
 RUN apk add --no-cache python3 make g++
+
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
 
 WORKDIR /app
 
@@ -34,6 +34,9 @@ RUN pnpm build
 
 # Stage 2: Production stage
 FROM node:20-alpine AS production
+
+# Install build dependencies
+RUN apk add --no-cache python3 make g++
 
 # Install pnpm
 RUN corepack enable && corepack prepare pnpm@latest --activate
