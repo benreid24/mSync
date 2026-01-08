@@ -1,7 +1,7 @@
 import { mkdir, copyFile } from "fs/promises";
 import { join, dirname, extname, basename } from "path";
 
-import { MUSIC_PATH } from "@msync/env.js";
+import { MUSIC_PATH, TMP_PATH } from "@msync/env.js";
 import { getYtdlp } from "@msync/plugins/ytdlp.js";
 import { DB } from "@msync/plugins/db/index.js";
 
@@ -13,12 +13,16 @@ import { makeVideoFilename } from "./makeVideoFilename.js";
 
 import { SyncStateEvent } from "@msync/sync/state.js";
 import { SyncError } from "@msync/sync/error.js";
+import { existsSync } from "fs";
 
 export async function syncPlaylist(
   playlistId: number,
   db: DB,
   onUpdate: (event: SyncStateEvent) => Promise<void>
 ): Promise<void> {
+  // ensure tmp directory exists
+  await mkdir(TMP_PATH, { recursive: true });
+
   try {
     const playlist = await db.findOne(Playlist, { id: playlistId });
     if (!playlist) {
@@ -42,23 +46,36 @@ export async function syncPlaylist(
 
     for (const video of videoList) {
       try {
-        const existingVideo = await db.findOne(Video, {
-          videoId: video.id,
-        });
-
         let dst = makeVideoFilename(outputDir, video.title, "mp3");
-        let downloadNew = true;
 
-        if (existingVideo) {
-          const existingVideoPath = dirname(existingVideo.localPath);
-          if (existingVideoPath === outputDir) {
-            console.debug(
-              `Skipping download for existing video: ${video.title}`
-            );
-            await onUpdate({ type: "notifyVideoCompleted", action: "skipped" });
-            continue;
+        const isSameVideo = (existingVideoPath: string) => {
+          if (dirname(existingVideoPath).endsWith(outputDir)) {
+            return true;
           }
+          return false;
+        };
 
+        const existingVideos = await db.findAll(Video, {
+          where: { videoId: video.id },
+        });
+        const existingVideo = existingVideos.reduce<Video | null>(
+          (best, current) => {
+            if (!best) return current;
+            return isSameVideo(current.localPath) ? current : best;
+          },
+          null
+        );
+
+        if (existingVideo && isSameVideo(existingVideo.localPath)) {
+          console.debug(
+            `Skipping download for existing video in this playlist: ${video.title}`
+          );
+          await onUpdate({ type: "notifyVideoCompleted", action: "skipped" });
+          continue;
+        }
+
+        let downloadNew = true;
+        if (existingVideo) {
           // output needs to be sanitized, use same basename as existing file
           const existingVideoBasename = basename(existingVideo.localPath);
           dst = join(outputDir, existingVideoBasename);
@@ -93,6 +110,7 @@ export async function syncPlaylist(
                 embedInfoJson: false,
                 embedThumbnail: true,
                 embedMetadata: true,
+                paths: { temp: TMP_PATH },
               }
             )
           ).trim();

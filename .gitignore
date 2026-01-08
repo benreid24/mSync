@@ -6,3 +6,4 @@ tsconfig.tsbuildinfo
 .env
 music
 .DS_Store
+tmp
