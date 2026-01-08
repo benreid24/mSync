@@ -13,7 +13,6 @@ import { makeVideoFilename } from "./makeVideoFilename.js";
 
 import { SyncStateEvent } from "@msync/sync/state.js";
 import { SyncError } from "@msync/sync/error.js";
-import { existsSync } from "fs";
 
 export async function syncPlaylist(
   playlistId: number,
